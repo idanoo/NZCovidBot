@@ -43,7 +43,7 @@ func formatCsvDiscordRow(data string) string {
 // formatCsvTwitterRow Format the string to a tidy string for the interwebs
 func formatCsvTwitterRow(data string) string {
 	c := parseRawRowData(data)
-	return fmt.Sprintf("New Location: *%s*no w\n%s\n_%s_ - _%s_\n#NZCovidTracker #NZCovid", c[2], c[3], c[0], c[1])
+	return fmt.Sprintf("New Location: %s\n%s\n%s - %s\n#NZCovidTracker #NZCovid", c[2], c[3], c[0], c[1])
 }
 
 // Returns []string of parsed
