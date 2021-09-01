@@ -63,7 +63,7 @@ func formatCsvTwitterRow(data string) string {
 	c := make([]string, 0)
 	c = append(c, fields...)
 	endtime := strings.Split(c[5], ", ")
-	return fmt.Sprintf("**%s** - %s _%s_ - _%s_", c[1], c[2], c[4], endtime[1])
+	return fmt.Sprintf("New Location: *%s\n%s\n_%s_ - _%s_\n#NZCovidBot", c[1], c[2], c[4], endtime[1])
 }
 
 func getPostableDiscordData() string {
@@ -81,21 +81,4 @@ func getPostableDiscordData() string {
 	}
 
 	return strings.Join(rows, "\n")
-}
-
-func getPostableTwitterData() string {
-	if len(updatedLocations.Locations) == 0 {
-		return ""
-	}
-
-	rows := make([]string, 0)
-	for _, location := range updatedLocations.Locations {
-		if location.ChangeType == "REMOVED" {
-			rows = append(rows, fmt.Sprintf("REMOVED: %s", location.TwitterData))
-		} else {
-			rows = append(rows, location.TwitterData)
-		}
-	}
-
-	return strings.Join(rows, "\n\n")
 }

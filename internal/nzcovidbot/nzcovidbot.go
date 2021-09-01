@@ -34,26 +34,19 @@ func Lesgoooo() {
 }
 
 func postTheUpdates() {
+	// Twitter
+	go postToTwitter()
+
 	// Discord
 	postableDiscordData := getPostableDiscordData()
-
 	if postableDiscordData == "" {
 		return
 	}
 
+	// Not using go routines so we don't get rate limited
 	for _, discordWebhook := range DiscordWebhooks {
 		postToDiscord(discordWebhook, postableDiscordData)
 	}
-
-	// Twitter
-	// postableTwitterData := getPostableTwitterData()
-	// if postableTwitterData == "" {
-	// 	return
-	// }
-
-	// for _, discordWebhook := range DiscordWebhooks {
-	// 	postToTwitter(discordWebhook, postableTwitterData)
-	// }
 
 	// Clear out posted data!
 	updatedLocations = UpdatedLocations{}
