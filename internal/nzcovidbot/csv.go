@@ -103,7 +103,7 @@ func getPostableDiscordData() string {
 		}
 	}
 
-	return "\\`\\`\\`\n" + strings.Join(rows, "\n") + "\n\\`\\`\\`"
+	return strings.Join(rows, "\n")
 }
 
 func getPostableSlackData() []string {
