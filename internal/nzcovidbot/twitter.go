@@ -2,6 +2,7 @@ package nzcovidbot
 
 import (
 	"log"
+	"time"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
@@ -34,5 +35,8 @@ func postToTwitter() {
 		if err != nil {
 			log.Print(err)
 		}
+
+		// Lets not ratelimit ourselves :upsidedownsmiley:
+		time.Sleep(1 * time.Second)
 	}
 }
