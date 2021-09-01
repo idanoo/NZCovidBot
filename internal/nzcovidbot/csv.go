@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 	"time"
 )
@@ -15,10 +16,11 @@ type UpdatedLocations struct {
 
 // Updated data
 type UpdatedRow struct {
-	ChangeType  string // ADDED, REMOVED, MODIFIED
-	DiscordData string // Formatted Row data
-	TwitterData string // Formatted Row data
-	SlackData   string // Formatted Row data
+	ChangeDate  time.Time // To order b
+	ChangeType  string    // ADDED, REMOVED, MODIFIED
+	DiscordData string    // Formatted Row data
+	TwitterData string    // Formatted Row data
+	SlackData   string    // Formatted Row data
 }
 
 // Struct of updated locations
@@ -26,7 +28,10 @@ var updatedLocations UpdatedLocations
 
 // parseCsvRow Build into struct for output later
 func parseCsvRow(changeType string, data string) {
+	parsedTime := parseTimeFromRow(data)
+
 	newRow := UpdatedRow{
+		ChangeDate:  parsedTime,
 		ChangeType:  changeType,
 		DiscordData: formatCsvDiscordRow(data),
 		TwitterData: formatCsvTwitterRow(data),
@@ -34,6 +39,12 @@ func parseCsvRow(changeType string, data string) {
 	}
 
 	updatedLocations.Locations = append(updatedLocations.Locations, newRow)
+}
+
+func orderRowDataByDate() {
+	sort.Slice(updatedLocations.Locations, func(i, j int) bool {
+		return updatedLocations.Locations[i].ChangeDate.Before(updatedLocations.Locations[j].ChangeDate)
+	})
 }
 
 // formatCsvDiscordRow Format the string to a tidy string for the interwebs
@@ -52,6 +63,28 @@ func formatCsvTwitterRow(data string) string {
 func formatCsvSlackRow(data string) string {
 	c := parseRawRowData(data)
 	return fmt.Sprintf("*%s* %s on _%s_ - _%s_", c[2], c[3], c[0], c[1])
+}
+
+func parseTimeFromRow(data string) time.Time {
+	r := csv.NewReader(strings.NewReader(data))
+	r.Comma = ','
+	fields, err := r.Read()
+	if err != nil {
+		fmt.Println(err)
+		return time.Now()
+	}
+
+	c := make([]string, 0)
+	c = append(c, fields...)
+
+	starttime := c[4]
+	st, err := time.Parse("02/01/2006, 3:04 pm", starttime)
+	if err != nil {
+		log.Print(err)
+		return time.Now()
+	}
+
+	return st
 }
 
 // Returns []string of parsed

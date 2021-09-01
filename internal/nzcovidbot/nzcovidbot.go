@@ -34,6 +34,8 @@ func Lesgoooo() {
 }
 
 func postTheUpdates() {
+	orderRowDataByDate()
+
 	// Twitter
 	go postToTwitter()
 
