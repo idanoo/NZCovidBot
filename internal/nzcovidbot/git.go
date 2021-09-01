@@ -20,6 +20,7 @@ var commitHash string
 // Location to store tmp data
 var tmpDirectory = "./tmp"
 
+// loadRepo Load repo into gitRepo var
 func loadRepo(repository string) {
 	r, err := git.PlainOpen(tmpDirectory + "/repo")
 	if err != nil {
@@ -35,6 +36,7 @@ func loadRepo(repository string) {
 	gitRepo = r
 }
 
+// cloneRepo Clone git repo
 func cloneRepo(repository string) *git.Repository {
 	if _, err := os.Stat(tmpDirectory); os.IsNotExist(err) {
 		err = os.Mkdir(tmpDirectory, 0755)
@@ -160,6 +162,9 @@ func checkForUpdates() {
 		}
 	}
 
+	// Store current hash for future comparisons
 	setCommitHash(head.Hash().String())
+
+	// SEND IT o/---->
 	postTheUpdates()
 }

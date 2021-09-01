@@ -34,6 +34,7 @@ func Lesgoooo() {
 }
 
 func postTheUpdates() {
+	// Lets reshuffle our structured data a bit (Exposure Date ASC)
 	orderRowDataByDate()
 
 	// Twitter
