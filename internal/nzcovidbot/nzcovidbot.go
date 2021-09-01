@@ -42,13 +42,15 @@ func postTheUpdates() {
 
 	// Discord
 	postableDiscordData := getPostableDiscordData()
-	if postableDiscordData == "" {
+	if len(postableDiscordData) == 0 {
 		return
 	}
 
-	// Not using go routines so we don't get rate limited
 	for _, discordWebhook := range DiscordWebhooks {
-		postToDiscord(discordWebhook, postableDiscordData)
+		for _, postableData := range postableDiscordData {
+			go postToDiscord(discordWebhook, postableData)
+			time.Sleep(1 * time.Second)
+		}
 	}
 
 	// Clear out posted data!

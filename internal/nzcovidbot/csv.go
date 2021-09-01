@@ -89,9 +89,10 @@ func parseRawRowData(data string) []string {
 	return append(output, starttime, endtime, c[1], c[2])
 }
 
-func getPostableDiscordData() string {
+func getPostableDiscordData() []string {
+	groups := make([]string, 0)
 	if len(updatedLocations.Locations) == 0 {
-		return ""
+		return groups
 	}
 
 	rows := make([]string, 0)
@@ -101,9 +102,14 @@ func getPostableDiscordData() string {
 		} else {
 			rows = append(rows, location.DiscordData)
 		}
+
+		if len(rows) > 20 {
+			groups = append(groups, strings.Join(rows, "\n"))
+			rows = make([]string, 0)
+		}
 	}
 
-	return strings.Join(rows, "\n")
+	return append(groups, strings.Join(rows, "\n"))
 }
 
 func getPostableSlackData() []string {
