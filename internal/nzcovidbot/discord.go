@@ -22,25 +22,14 @@ func postToDiscord(webhookString string, msg string) {
 		return
 	}
 
-	// message, err := webhook.SendContent(msg)
-	// if err != nil {
-	// 	log.Print(err)
-	// 	return
-	// }
-
-	// // message, err = webhook.SendEmbeds(api.NewEmbedBuilder().
-	// // 	SetDescription(msg).
-	// // 	Build(),
-	// // )
-	// if err != nil {
-	// 	log.Print(err)
-	// 	return
-	// }
-
-	_, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
-		SetContent(msg).
+	_, err = webhook.SendEmbeds(api.NewEmbedBuilder().
+		SetDescription(msg).
 		Build(),
 	)
+	if err != nil {
+		log.Print(err)
+		return
+	}
 
 	if err != nil {
 		log.Print(err)

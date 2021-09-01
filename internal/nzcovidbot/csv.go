@@ -45,7 +45,8 @@ func formatCsvDiscordRow(data string) string {
 
 	c := make([]string, 0)
 	c = append(c, fields...)
-	return fmt.Sprintf("**%s** %s on _%s_ - _%s_", c[1], c[2], c[4], c[5])
+	endtime := strings.Split(c[5], ", ")
+	return fmt.Sprintf("**%s** %s on _%s_ - _%s_", c[1], c[2], c[4], endtime[1])
 }
 
 // formatCsvTwitterRow Format the string to a tidy string for the interwebs
@@ -61,7 +62,8 @@ func formatCsvTwitterRow(data string) string {
 
 	c := make([]string, 0)
 	c = append(c, fields...)
-	return fmt.Sprintf("**%s** - %s\n_%s_ - _%s_", c[1], c[2], c[4], c[5])
+	endtime := strings.Split(c[5], ", ")
+	return fmt.Sprintf("**%s** - %s _%s_ - _%s_", c[1], c[2], c[4], endtime[1])
 }
 
 func getPostableDiscordData() string {
@@ -78,7 +80,7 @@ func getPostableDiscordData() string {
 		}
 	}
 
-	return strings.Join(rows, "\n\n")
+	return strings.Join(rows, "\n")
 }
 
 func getPostableTwitterData() string {
