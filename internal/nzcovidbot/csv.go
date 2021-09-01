@@ -63,7 +63,7 @@ func formatCsvTwitterRow(data string) string {
 	c := make([]string, 0)
 	c = append(c, fields...)
 	endtime := strings.Split(c[5], ", ")
-	return fmt.Sprintf("New Location: *%s\n%s\n_%s_ - _%s_\n#NZCovidBot", c[1], c[2], c[4], endtime[1])
+	return fmt.Sprintf("New Location: *%s*no w\n%s\n_%s_ - _%s_\n#NZCovidBot", c[1], c[2], c[4], endtime[1])
 }
 
 func getPostableDiscordData() string {
