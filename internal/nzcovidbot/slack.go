@@ -2,6 +2,7 @@ package nzcovidbot
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ashwanthkumar/slack-go-webhook"
 )
@@ -19,10 +20,9 @@ func postToSlack() {
 		return
 	}
 
+	rawText := strings.Join(postableData, "\n")
 	attachment1 := slack.Attachment{}
-	for _, v := range postableData {
-		attachment1.AddField(slack.Field{Value: v})
-	}
+	attachment1.Text = &rawText
 
 	payload := slack.Payload{
 		Text:        "New Locations of Interest!",
