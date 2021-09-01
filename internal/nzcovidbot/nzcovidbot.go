@@ -15,7 +15,7 @@ func Lesgoooo() {
 	endTicker := make(chan bool)
 
 	// Timer to run every minute
-	minuteTicker := time.NewTicker(time.Duration(15) * time.Second)
+	minuteTicker := time.NewTicker(time.Duration(60) * time.Second)
 
 	// Initial check on load
 	go checkForUpdates()
