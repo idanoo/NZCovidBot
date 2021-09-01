@@ -37,6 +37,9 @@ func postTheUpdates() {
 	// Twitter
 	go postToTwitter()
 
+	// Slack
+	go postToSlack()
+
 	// Discord
 	postableDiscordData := getPostableDiscordData()
 	if postableDiscordData == "" {

@@ -18,6 +18,7 @@ type UpdatedRow struct {
 	ChangeType  string // ADDED, REMOVED, MODIFIED
 	DiscordData string // Formatted Row data
 	TwitterData string // Formatted Row data
+	SlackData   string // Formatted Row data
 }
 
 // Struct of updated locations
@@ -29,6 +30,7 @@ func parseCsvRow(changeType string, data string) {
 		ChangeType:  changeType,
 		DiscordData: formatCsvDiscordRow(data),
 		TwitterData: formatCsvTwitterRow(data),
+		SlackData:   formatCsvSlackRow(data),
 	}
 
 	updatedLocations.Locations = append(updatedLocations.Locations, newRow)
@@ -44,6 +46,12 @@ func formatCsvDiscordRow(data string) string {
 func formatCsvTwitterRow(data string) string {
 	c := parseRawRowData(data)
 	return fmt.Sprintf("New Location: %s\n%s\n%s - %s\n#NZCovidTracker #NZCovid", c[2], c[3], c[0], c[1])
+}
+
+// formatCsvSlackRow Format the string to a tidy string for the interwebs
+func formatCsvSlackRow(data string) string {
+	c := parseRawRowData(data)
+	return fmt.Sprintf("*%s* %s on _%s_ - _%s_", c[2], c[3], c[0], c[1])
 }
 
 // Returns []string of parsed
@@ -95,5 +103,22 @@ func getPostableDiscordData() string {
 		}
 	}
 
-	return strings.Join(rows, "\n")
+	return "\\`\\`\\`\n" + strings.Join(rows, "\n") + "\n\\`\\`\\`"
+}
+
+func getPostableSlackData() []string {
+	rows := make([]string, 0)
+	if len(updatedLocations.Locations) == 0 {
+		return rows
+	}
+
+	for _, location := range updatedLocations.Locations {
+		if location.ChangeType == "REMOVED" {
+			rows = append(rows, fmt.Sprintf("REMOVED: %s", location.SlackData))
+		} else {
+			rows = append(rows, location.SlackData)
+		}
+	}
+
+	return rows
 }

@@ -22,6 +22,10 @@ func postToTwitter() {
 		return
 	}
 
+	if len(updatedLocations.Locations) == 0 {
+		return
+	}
+
 	config := oauth1.NewConfig(TwitterCreds.ConsumerKey, TwitterCreds.ConsumerSecret)
 	token := oauth1.NewToken(TwitterCreds.AccessToken, TwitterCreds.AccessTokenSecret)
 	httpClient := config.Client(oauth1.NoContext, token)

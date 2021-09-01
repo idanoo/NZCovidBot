@@ -8,10 +8,8 @@ import (
 	"github.com/DisgoOrg/disgohook/api"
 )
 
-var (
-	// Slice of discord webhooks
-	DiscordWebhooks []string
-)
+// Slice of discord webhooks
+var DiscordWebhooks []string
 
 func postToDiscord(webhookString string, msg string) {
 	tokenParts := strings.Split(webhookString, "/")
