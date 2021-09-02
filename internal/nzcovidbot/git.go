@@ -147,6 +147,10 @@ func checkForUpdates() {
 			for _, hunk := range file.Hunks {
 				newRange := hunk.WholeRange
 				for _, line := range newRange.Lines {
+					if strings.Contains(line.Content, "Start,End,Advice") {
+						continue
+					}
+
 					if line.Mode == diffparser.ADDED {
 						parseCsvRow("ADDED", line.Content)
 					}
