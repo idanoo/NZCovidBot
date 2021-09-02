@@ -31,6 +31,9 @@ func loadRepo(repository string) {
 		}
 	}
 
+	// Preload cache data of current rows
+	loadRepoIntoCache(tmpDirectory + "/repo")
+
 	commitHash := getCommitHash()
 	log.Printf("Last reported hash: %s", commitHash)
 	gitRepo = r

@@ -30,7 +30,6 @@ func Lesgoooo() {
 			go checkForUpdates()
 		}
 	}
-
 }
 
 func postTheUpdates() {

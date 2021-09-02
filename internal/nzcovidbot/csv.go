@@ -3,7 +3,10 @@ package nzcovidbot
 import (
 	"encoding/csv"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -26,19 +29,106 @@ type UpdatedRow struct {
 // Struct of updated locations
 var updatedLocations UpdatedLocations
 
+// cache of [exposureID]row of row data
+var rowCache map[string]string
+
 // parseCsvRow Build into struct for output later
 func parseCsvRow(changeType string, data string) {
 	parsedTime := parseTimeFromRow(data)
 
-	newRow := UpdatedRow{
-		ChangeDate:  parsedTime,
-		ChangeType:  changeType,
-		DiscordData: formatCsvDiscordRow(data),
-		TwitterData: formatCsvTwitterRow(data),
-		SlackData:   formatCsvSlackRow(data),
+	c := parseRawRowData(data)
+	if rowHasChanged(c[4], data) {
+		newRow := UpdatedRow{
+			ChangeDate:  parsedTime,
+			ChangeType:  changeType,
+			DiscordData: formatCsvDiscordRow(c),
+			TwitterData: formatCsvTwitterRow(c),
+			SlackData:   formatCsvSlackRow(c),
+		}
+
+		// Update row cache
+		rowCache[c[4]] = data
+
+		// Append row data
+		updatedLocations.Locations = append(updatedLocations.Locations, newRow)
+	}
+}
+
+// rowHasChanged - Determine if row has actually changed
+func rowHasChanged(exposureId string, row string) bool {
+	val, exists := rowCache[exposureId]
+	if !exists {
+		return true
 	}
 
-	updatedLocations.Locations = append(updatedLocations.Locations, newRow)
+	if val != row {
+		return true
+	}
+
+	return false
+}
+
+// loadRepoIntoCache - reads all CSV data and parses the rows into our cache
+func loadRepoIntoCache(repoLocation string) {
+	// Init our cache!
+	rowCache = make(map[string]string)
+
+	folders, err := ioutil.ReadDir(repoLocation + "/locations-of-interest")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// /august-2021
+	for _, f := range folders {
+		if f.IsDir() {
+			files, err := ioutil.ReadDir(repoLocation + "/locations-of-interest/" + f.Name())
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			// august-2021/locations-of-interest.csv
+			for _, x := range files {
+				fullLocation := repoLocation + "/locations-of-interest/" + f.Name() + "/" + x.Name()
+				if strings.HasSuffix(fullLocation, ".csv") {
+					loadRowsIntoCache(fullLocation)
+				}
+			}
+		}
+	}
+}
+
+func loadRowsIntoCache(filePath string) {
+	// Open the file
+	csvfile, err := os.Open(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer csvfile.Close()
+
+	// Parse the file
+	r := csv.NewReader(csvfile)
+
+	// Iterate through the records
+	i := 0
+	for {
+		// Skip header row
+		if i == 0 {
+			i++
+			continue
+		}
+
+		// Read each record from csv
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Add to cache var
+		rowCache[row[0]] = strings.Join(row, ",")
+	}
 }
 
 func orderRowDataByDate() {
@@ -48,20 +138,17 @@ func orderRowDataByDate() {
 }
 
 // formatCsvDiscordRow Format the string to a tidy string for the interwebs
-func formatCsvDiscordRow(data string) string {
-	c := parseRawRowData(data)
+func formatCsvDiscordRow(c []string) string {
 	return fmt.Sprintf("**%s** %s on _%s_ - _%s_", c[2], c[3], c[0], c[1])
 }
 
 // formatCsvTwitterRow Format the string to a tidy string for the interwebs
-func formatCsvTwitterRow(data string) string {
-	c := parseRawRowData(data)
+func formatCsvTwitterRow(c []string) string {
 	return fmt.Sprintf("New Location: %s\n%s\n%s - %s\n#NZCovidTracker #NZCovid", c[2], c[3], c[0], c[1])
 }
 
 // formatCsvSlackRow Format the string to a tidy string for the interwebs
-func formatCsvSlackRow(data string) string {
-	c := parseRawRowData(data)
+func formatCsvSlackRow(c []string) string {
 	return fmt.Sprintf("*%s* %s on _%s_ - _%s_", c[2], c[3], c[0], c[1])
 }
 
@@ -87,7 +174,7 @@ func parseTimeFromRow(data string) time.Time {
 	return st
 }
 
-// Returns []string of parsed
+// Returns []string of parsed data.. starttime, endtime, name, address, ID
 func parseRawRowData(data string) []string {
 	output := make([]string, 0)
 
@@ -119,7 +206,7 @@ func parseRawRowData(data string) []string {
 		endtime = et.Format("3:04PM")
 	}
 
-	return append(output, starttime, endtime, c[1], c[2])
+	return append(output, starttime, endtime, c[1], c[2], c[0])
 }
 
 func getPostableDiscordData() []string {
