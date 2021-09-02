@@ -195,6 +195,11 @@ func parseRawRowData(data string) []string {
 	st, err := time.Parse("02/01/2006, 3:04 pm", starttime)
 	if err != nil {
 		log.Print(err)
+		st, err = time.Parse("2006-01-02 15:04:05", starttime)
+		if err != nil {
+			log.Print(err)
+			starttime = c[4]
+		}
 	} else {
 		starttime = st.Format("Monday 2 Jan, 3:04PM")
 	}
@@ -203,7 +208,11 @@ func parseRawRowData(data string) []string {
 	et, err := time.Parse("02/01/2006, 3:04 pm", endtime)
 	if err != nil {
 		log.Print(err)
-		endtime = strings.Split(c[5], ", ")[1]
+		et, err = time.Parse("2006-01-02 15:04:05", endtime)
+		if err != nil {
+			log.Print(err)
+			endtime = c[5]
+		}
 	} else {
 		endtime = et.Format("3:04PM")
 	}
