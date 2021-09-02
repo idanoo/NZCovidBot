@@ -144,26 +144,28 @@ func checkForUpdates() {
 	// Loop through file changes
 	for _, file := range diff.Files {
 		if strings.HasSuffix(file.NewName, ".csv") {
-			for _, hunk := range file.Hunks {
-				newRange := hunk.WholeRange
-				for _, line := range newRange.Lines {
-					if strings.Contains(line.Content, "Start,End,Advice") {
-						continue
-					}
+			if strings.HasPrefix(file.NewName, "locations-of-interest/") {
+				for _, hunk := range file.Hunks {
+					newRange := hunk.WholeRange
+					for _, line := range newRange.Lines {
+						if strings.Contains(line.Content, "Start,End,Advice") {
+							continue
+						}
 
-					if line.Mode == diffparser.ADDED {
-						parseCsvRow("ADDED", line.Content)
+						if line.Mode == diffparser.ADDED {
+							parseCsvRow("ADDED", line.Content)
+						}
+						// switch changeType := line.Mode; changeType {
+						// case diffparser.UNCHANGED:
+						// 	continue
+						// case diffparser.ADDED:
+						// 	parseCsvRow("ADDED", line.Content)
+						// case diffparser.REMOVED:
+						// 	continue
+						// 	// To re-add in future?
+						// 	// parseCsvRow("REMOVED", line.Content)
+						// }
 					}
-					// switch changeType := line.Mode; changeType {
-					// case diffparser.UNCHANGED:
-					// 	continue
-					// case diffparser.ADDED:
-					// 	parseCsvRow("ADDED", line.Content)
-					// case diffparser.REMOVED:
-					// 	continue
-					// 	// To re-add in future?
-					// 	// parseCsvRow("REMOVED", line.Content)
-					// }
 				}
 			}
 		}
