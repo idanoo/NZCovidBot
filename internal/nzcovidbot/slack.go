@@ -8,10 +8,10 @@ import (
 )
 
 // Slack webhook URL
-var SlackWebhook string
+var SlackWebhooks []string
 
 func postToSlack() {
-	if SlackWebhook == "" {
+	if len(SlackWebhooks) == 0 {
 		return
 	}
 
@@ -32,8 +32,10 @@ func postToSlack() {
 		Attachments: []slack.Attachment{attachment1},
 	}
 
-	err := slack.Send(SlackWebhook, "", payload)
-	if len(err) > 0 {
-		fmt.Printf("error: %s\n", err)
+	for _, webhook := range SlackWebhooks {
+		err := slack.Send(webhook, "", payload)
+		if len(err) > 0 {
+			fmt.Print(err)
+		}
 	}
 }

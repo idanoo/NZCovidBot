@@ -21,8 +21,8 @@ func main() {
 	// Fetch discord webhooks
 	nzcovidbot.DiscordWebhooks = strings.Split(os.Getenv("DISCORD_WEBHOOKS"), ",")
 
-	// Fetch slack webhook
-	nzcovidbot.SlackWebhook = os.Getenv("SLACK_WEBHOOK")
+	// Fetch slack webhooks
+	nzcovidbot.SlackWebhooks = strings.Split(os.Getenv("SLACK_WEBHOOKS"), ",")
 
 	// Fetch twitter keys
 	nzcovidbot.TwitterCreds = nzcovidbot.TwitterCredentials{
