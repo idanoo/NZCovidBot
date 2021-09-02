@@ -95,6 +95,8 @@ func loadRepoIntoCache(repoLocation string) {
 			}
 		}
 	}
+
+	log.Printf("Successfully populated cache with %d entries", len(rowCache))
 }
 
 func loadRowsIntoCache(filePath string) {
