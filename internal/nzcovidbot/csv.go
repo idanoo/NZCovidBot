@@ -192,7 +192,7 @@ func parseRawRowData(data string) []string {
 	c = append(c, fields...)
 
 	starttime := c[4]
-	st, err := time.Parse("02/01/2006, 3:04 pm", starttime)
+	st, err := time.Parse("2/01/2006, 3:04 pm", starttime)
 	if err != nil {
 		log.Print(err)
 		st, err = time.Parse("2006-01-02 15:04:05", starttime)
@@ -205,7 +205,7 @@ func parseRawRowData(data string) []string {
 	}
 
 	endtime := c[5]
-	et, err := time.Parse("02/01/2006, 3:04 pm", endtime)
+	et, err := time.Parse("2/01/2006, 3:04 pm", endtime)
 	if err != nil {
 		log.Print(err)
 		et, err = time.Parse("2006-01-02 15:04:05", endtime)
