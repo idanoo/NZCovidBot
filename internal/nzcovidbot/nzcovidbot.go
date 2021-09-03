@@ -51,7 +51,7 @@ func postTheUpdates() {
 	for _, discordWebhook := range DiscordWebhooks {
 		for _, postableData := range postableDiscordData {
 			go postToDiscord(discordWebhook, postableData)
-			time.Sleep(1 * time.Second)
+			time.Sleep(500 * time.Millisecond)
 		}
 	}
 

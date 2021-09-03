@@ -12,6 +12,10 @@ import (
 var DiscordWebhooks []string
 
 func postToDiscord(webhookString string, msg string) {
+	if webhookString == "" {
+		return
+	}
+
 	tokenParts := strings.Split(webhookString, "/")
 	len := len(tokenParts)
 	webhook, err := disgohook.NewWebhookClientByToken(nil, nil, tokenParts[len-2]+"/"+tokenParts[len-1])

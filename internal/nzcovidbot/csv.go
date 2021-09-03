@@ -19,49 +19,65 @@ type UpdatedLocations struct {
 
 // Updated data
 type UpdatedRow struct {
-	ChangeDate  time.Time // To order b
-	ChangeType  string    // ADDED, REMOVED, MODIFIED
-	DiscordData string    // Formatted Row data
-	TwitterData string    // Formatted Row data
-	SlackData   string    // Formatted Row data
+	FromDate        time.Time `json:"FromDate"`        // Start date
+	EndDate         time.Time `json:"EndDate"`         // End date
+	LocationName    string    `json:"LocationName"`    // Location Name
+	LocationAddress string    `json:"LocationAddress"` // Location Address
+
+	DiscordData string `json:"-"` // Formatted Row data
+	TwitterData string `json:"-"` // Formatted Row data
+	SlackData   string `json:"-"` // Formatted Row data
 }
 
 // Struct of updated locations
 var updatedLocations UpdatedLocations
 
 // cache of [exposureID]row of row data
-var rowCache map[string]string
+var rowCache map[string]UpdatedRow
 
 // parseCsvRow Build into struct for output later
-func parseCsvRow(changeType string, data string) {
-	parsedTime := parseTimeFromRow(data)
+func parseCsvRow(data string) {
+	c, st, et := parseRawRowData(data)
 
-	c := parseRawRowData(data)
-	if rowHasChanged(c[4], data) {
+	if rowHasChanged(c[4], st, et, c[1], c[2]) {
 		newRow := UpdatedRow{
-			ChangeDate:  parsedTime,
-			ChangeType:  changeType,
-			DiscordData: formatCsvDiscordRow(c),
-			TwitterData: formatCsvTwitterRow(c),
-			SlackData:   formatCsvSlackRow(c),
+			FromDate:        st,
+			EndDate:         et,
+			LocationName:    c[1],
+			LocationAddress: c[2],
+			DiscordData:     formatCsvDiscordRow(c),
+			TwitterData:     formatCsvTwitterRow(c),
+			SlackData:       formatCsvSlackRow(c),
 		}
 
-		// Update row cache
-		rowCache[c[4]] = data
+		// Update row cache! [exposureId]UpdatedRow
+		rowCache[c[4]] = newRow
 
 		// Append row data
 		updatedLocations.Locations = append(updatedLocations.Locations, newRow)
 	}
 }
 
-// rowHasChanged - Determine if row has actually changed
-func rowHasChanged(exposureId string, row string) bool {
+// rowHasChanged - Determine if row has actually changed based on raw data
+func rowHasChanged(exposureId string, startTime time.Time, endTime time.Time, locationName string, locationAddress string) bool {
 	val, exists := rowCache[exposureId]
 	if !exists {
 		return true
 	}
 
-	if val != row {
+	if val.FromDate != startTime {
+		return true
+	}
+
+	if val.EndDate != endTime {
+		return true
+	}
+
+	if val.LocationName != locationName {
+		return true
+	}
+
+	if val.LocationAddress != locationAddress {
 		return true
 	}
 
@@ -71,7 +87,9 @@ func rowHasChanged(exposureId string, row string) bool {
 // loadRepoIntoCache - reads all CSV data and parses the rows into our cache
 func loadRepoIntoCache(repoLocation string) {
 	// Init our cache!
-	rowCache = make(map[string]string)
+	rowCache = make(map[string]UpdatedRow)
+
+	// Load cache file. ELSE load files.
 
 	folders, err := ioutil.ReadDir(repoLocation + "/locations-of-interest")
 	if err != nil {
@@ -113,12 +131,6 @@ func loadRowsIntoCache(filePath string) {
 	// Iterate through the records
 	i := 0
 	for {
-		// Skip header row
-		if i == 0 {
-			i++
-			continue
-		}
-
 		// Read each record from csv
 		row, err := r.Read()
 		if err == io.EOF {
@@ -128,14 +140,34 @@ func loadRowsIntoCache(filePath string) {
 			log.Fatal(err)
 		}
 
-		// Add to cache var
-		rowCache[row[0]] = strings.Join(row, ",")
+		// Skip header row
+		if i == 0 {
+			i++
+			continue
+		}
+
+		// Parse into our required format
+		c := make([]string, 0)
+		c = append(c, row...)
+
+		st, et := parseRowTimes(c[4], c[5])
+
+		// Build object
+		newRow := UpdatedRow{
+			FromDate:        st,
+			EndDate:         et,
+			LocationName:    c[1],
+			LocationAddress: c[2],
+		}
+
+		// Add to cache
+		rowCache[row[0]] = newRow
 	}
 }
 
 func orderRowDataByDate() {
 	sort.Slice(updatedLocations.Locations, func(i, j int) bool {
-		return updatedLocations.Locations[i].ChangeDate.Before(updatedLocations.Locations[j].ChangeDate)
+		return updatedLocations.Locations[i].FromDate.Before(updatedLocations.Locations[j].FromDate)
 	})
 }
 
@@ -154,30 +186,8 @@ func formatCsvSlackRow(c []string) string {
 	return fmt.Sprintf("*%s* %s on _%s_ - _%s_", c[2], c[3], c[0], c[1])
 }
 
-func parseTimeFromRow(data string) time.Time {
-	r := csv.NewReader(strings.NewReader(data))
-	r.Comma = ','
-	fields, err := r.Read()
-	if err != nil {
-		fmt.Println(err)
-		return time.Now()
-	}
-
-	c := make([]string, 0)
-	c = append(c, fields...)
-
-	starttime := c[4]
-	st, err := time.Parse("02/01/2006, 3:04 pm", starttime)
-	if err != nil {
-		log.Print(err)
-		return time.Now()
-	}
-
-	return st
-}
-
 // Returns []string of parsed data.. starttime, endtime, name, address, ID
-func parseRawRowData(data string) []string {
+func parseRawRowData(data string) ([]string, time.Time, time.Time) {
 	output := make([]string, 0)
 
 	r := csv.NewReader(strings.NewReader(data))
@@ -185,39 +195,41 @@ func parseRawRowData(data string) []string {
 	fields, err := r.Read()
 	if err != nil {
 		fmt.Println(err)
-		return output
+		return output, time.Now(), time.Now()
 	}
 
 	c := make([]string, 0)
 	c = append(c, fields...)
 
-	starttime := c[4]
-	st, err := time.Parse("2/01/2006, 3:04 pm", starttime)
+	st, et := parseRowTimes(c[4], c[5])
+
+	starttime := st.Format("Monday 2 Jan, 3:04PM")
+	endtime := et.Format("3:04PM")
+
+	return append(output, starttime, endtime, c[1], c[2], c[0]), st, et
+}
+
+func parseRowTimes(startString string, endString string) (time.Time, time.Time) {
+	st, err := time.Parse("2/01/2006, 3:04 pm", startString)
 	if err != nil {
 		log.Print(err)
-		st, err = time.Parse("2006-01-02 15:04:05", starttime)
+		st, err = time.Parse("2006-01-02 15:04:05", startString)
 		if err != nil {
 			log.Print(err)
-			starttime = c[4]
+			st = time.Now()
 		}
-	} else {
-		starttime = st.Format("Monday 2 Jan, 3:04PM")
 	}
 
-	endtime := c[5]
-	et, err := time.Parse("2/01/2006, 3:04 pm", endtime)
+	et, err := time.Parse("2/01/2006, 3:04 pm", endString)
 	if err != nil {
 		log.Print(err)
-		et, err = time.Parse("2006-01-02 15:04:05", endtime)
+		et, err = time.Parse("2006-01-02 15:04:05", endString)
 		if err != nil {
 			log.Print(err)
-			endtime = c[5]
+			et = time.Now()
 		}
-	} else {
-		endtime = et.Format("3:04PM")
 	}
-
-	return append(output, starttime, endtime, c[1], c[2], c[0])
+	return st, et
 }
 
 func getPostableDiscordData() []string {
@@ -228,11 +240,7 @@ func getPostableDiscordData() []string {
 
 	rows := make([]string, 0)
 	for _, location := range updatedLocations.Locations {
-		if location.ChangeType == "REMOVED" {
-			rows = append(rows, fmt.Sprintf("REMOVED: %s", location.DiscordData))
-		} else {
-			rows = append(rows, location.DiscordData)
-		}
+		rows = append(rows, location.DiscordData)
 
 		if len(rows) > 20 {
 			groups = append(groups, strings.Join(rows, "\n"))
@@ -250,11 +258,7 @@ func getPostableSlackData() []string {
 	}
 
 	for _, location := range updatedLocations.Locations {
-		if location.ChangeType == "REMOVED" {
-			rows = append(rows, fmt.Sprintf("REMOVED: %s", location.SlackData))
-		} else {
-			rows = append(rows, location.SlackData)
-		}
+		rows = append(rows, location.SlackData)
 	}
 
 	return rows

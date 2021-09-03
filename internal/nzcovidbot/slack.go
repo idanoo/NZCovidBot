@@ -33,6 +33,10 @@ func postToSlack() {
 	}
 
 	for _, webhook := range SlackWebhooks {
+		if webhook == "" {
+			continue
+		}
+
 		err := slack.Send(webhook, "", payload)
 		if len(err) > 0 {
 			fmt.Print(err)
