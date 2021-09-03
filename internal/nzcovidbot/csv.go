@@ -39,12 +39,12 @@ var rowCache map[string]UpdatedRow
 func parseCsvRow(data string) {
 	c, st, et := parseRawRowData(data)
 
-	if rowHasChanged(c[4], st, et, c[1], c[2]) {
+	if rowHasChanged(c[4], st, et, c[2], c[3]) {
 		newRow := UpdatedRow{
 			FromDate:        st,
 			EndDate:         et,
-			LocationName:    c[1],
-			LocationAddress: c[2],
+			LocationName:    c[2],
+			LocationAddress: c[3],
 			DiscordData:     formatCsvDiscordRow(c),
 			TwitterData:     formatCsvTwitterRow(c),
 			SlackData:       formatCsvSlackRow(c),
@@ -62,22 +62,27 @@ func parseCsvRow(data string) {
 func rowHasChanged(exposureId string, startTime time.Time, endTime time.Time, locationName string, locationAddress string) bool {
 	val, exists := rowCache[exposureId]
 	if !exists {
+		log.Printf("exposureId %s is new. Adding to cache", exposureId)
 		return true
 	}
 
-	if val.FromDate != startTime {
+	if val.FromDate.Unix() != startTime.Unix() {
+		log.Printf("StartDate Change for %s from %s to %s", exposureId, val.FromDate.String(), startTime.String())
 		return true
 	}
 
-	if val.EndDate != endTime {
+	if val.EndDate.Unix() != endTime.Unix() {
+		log.Printf("EndDate Change for %s from %s to %s", exposureId, val.EndDate.String(), endTime.String())
 		return true
 	}
 
-	if val.LocationName != locationName {
+	if !strings.EqualFold(val.LocationName, locationName) {
+		log.Printf("LocationName Change for %s from %s to %s", exposureId, val.LocationName, locationName)
 		return true
 	}
 
-	if val.LocationAddress != locationAddress {
+	if !strings.EqualFold(val.LocationAddress, locationAddress) {
+		log.Printf("LocationAddress Change for %s from %s to %s", exposureId, val.LocationAddress, locationAddress)
 		return true
 	}
 
