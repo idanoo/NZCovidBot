@@ -37,7 +37,10 @@ var rowCache map[string]UpdatedRow
 
 // parseCsvRow Build into struct for output later
 func parseCsvRow(data string) {
-	c, st, et := parseRawRowData(data)
+	c, st, et, err := parseRawRowData(data)
+	if err != nil {
+		return
+	}
 
 	if rowHasChanged(c[4], st, et, c[2], c[3]) {
 		newRow := UpdatedRow{
@@ -192,7 +195,7 @@ func formatCsvSlackRow(c []string) string {
 }
 
 // Returns []string of parsed data.. starttime, endtime, name, address, ID
-func parseRawRowData(data string) ([]string, time.Time, time.Time) {
+func parseRawRowData(data string) ([]string, time.Time, time.Time, error) {
 	output := make([]string, 0)
 
 	r := csv.NewReader(strings.NewReader(data))
@@ -200,28 +203,28 @@ func parseRawRowData(data string) ([]string, time.Time, time.Time) {
 	fields, err := r.Read()
 	if err != nil {
 		fmt.Println(err)
-		return output, time.Now(), time.Now()
+		return output, time.Now(), time.Now(), err
 	}
 
 	c := make([]string, 0)
 	c = append(c, fields...)
 
-	st, et := parseRowTimes(c[4], c[5])
+	st, et, err := parseRowTimes(c[4], c[5])
 
 	starttime := st.Format("Monday 2 Jan, 3:04PM")
 	endtime := et.Format("3:04PM")
 
-	return append(output, starttime, endtime, c[1], c[2], c[0]), st, et
+	return append(output, starttime, endtime, c[1], c[2], c[0]), st, et, err
 }
 
-func parseRowTimes(startString string, endString string) (time.Time, time.Time) {
+func parseRowTimes(startString string, endString string) (time.Time, time.Time, error) {
 	st, err := time.Parse("2/01/2006, 3:04 pm", startString)
 	if err != nil {
 		log.Print(err)
 		st, err = time.Parse("2006-01-02 15:04:05", startString)
 		if err != nil {
 			log.Print(err)
-			st = time.Now()
+			return time.Now(), time.Now(), err
 		}
 	}
 
@@ -231,10 +234,10 @@ func parseRowTimes(startString string, endString string) (time.Time, time.Time) 
 		et, err = time.Parse("2006-01-02 15:04:05", endString)
 		if err != nil {
 			log.Print(err)
-			et = time.Now()
+			return time.Now(), time.Now(), err
 		}
 	}
-	return st, et
+	return st, et, nil
 }
 
 func getPostableDiscordData() []string {
