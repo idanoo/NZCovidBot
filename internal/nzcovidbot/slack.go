@@ -27,7 +27,7 @@ func postToSlack() {
 	payload := slack.Payload{
 		Text:        "New Locations of Interest!",
 		Username:    "NZCovidTracker",
-		Channel:     "#covid-19",
+		Channel:     "#covid-19-locations",
 		IconUrl:     "https://www.skids.co.nz/wp-content/uploads/2020/08/download.png",
 		Attachments: []slack.Attachment{attachment1},
 	}
