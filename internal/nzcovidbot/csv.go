@@ -6,10 +6,14 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/ashwanthkumar/slack-go-webhook"
 )
 
 // Slice of updated located
@@ -24,9 +28,9 @@ type UpdatedRow struct {
 	LocationName    string    `json:"LocationName"`    // Location Name
 	LocationAddress string    `json:"LocationAddress"` // Location Address
 
-	DiscordData string `json:"-"` // Formatted Row data
-	TwitterData string `json:"-"` // Formatted Row data
-	SlackData   string `json:"-"` // Formatted Row data
+	DiscordData string           `json:"-"` // Formatted Row data
+	TwitterData string           `json:"-"` // Formatted Row data
+	SlackData   slack.Attachment `json:"-"` // Formatted Row data
 }
 
 // Struct of updated locations
@@ -198,8 +202,34 @@ func formatCsvTwitterRow(c []string) string {
 }
 
 // formatCsvSlackRow Format the string to a tidy string for the interwebs
-func formatCsvSlackRow(c []string) string {
-	return fmt.Sprintf("*%s* %s on _%s_ - _%s_", c[2], c[3], c[0], c[1])
+func formatCsvSlackRow(c []string) slack.Attachment {
+	url := getMapsLinkFromAddress(c[2], c[3])
+	name := stripDateFromName(c[2])
+	dateRange := fmt.Sprintf("%s - %s", c[0], c[1])
+
+	attachment := slack.Attachment{
+		Title:     &name,
+		TitleLink: &url,
+		Text:      &dateRange,
+	}
+	return attachment
+}
+
+// getMapsLinkFromAddress hyperlink gmaps
+func getMapsLinkFromAddress(name string, address string) string {
+	return fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%s", url.QueryEscape(name+", "+address))
+}
+
+// stripDateFromName if theres a date at the end - remove it!
+func stripDateFromName(name string) string {
+	re := regexp.MustCompile(`\d{1,2}/\d{1,2}/\d{2,4}`)
+	submatchall := re.FindAllString(name, -1)
+	for _, element := range submatchall {
+		name = strings.Replace(name, element, "", 1)
+		break
+	}
+
+	return strings.TrimSpace(name)
 }
 
 // Returns []string of parsed data.. starttime, endtime, name, address, ID
@@ -267,8 +297,8 @@ func getPostableDiscordData() []string {
 	return append(groups, strings.Join(rows, "\n"))
 }
 
-func getPostableSlackData() []string {
-	rows := make([]string, 0)
+func getPostableSlackData() []slack.Attachment {
+	rows := make([]slack.Attachment, 0)
 	if len(updatedLocations.Locations) == 0 {
 		return rows
 	}

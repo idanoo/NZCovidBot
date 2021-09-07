@@ -7,7 +7,7 @@ import (
 	"github.com/ashwanthkumar/slack-go-webhook"
 )
 
-// Slack webhook URL
+// Slack webhook#channel
 var SlackWebhooks []string
 
 func postToSlack() {
@@ -15,21 +15,9 @@ func postToSlack() {
 		return
 	}
 
-	postableData := getPostableSlackData()
-	if len(postableData) == 0 {
+	attachmentData := getPostableSlackData()
+	if len(attachmentData) == 0 {
 		return
-	}
-
-	rawText := strings.Join(postableData, "\n")
-	attachment1 := slack.Attachment{}
-	attachment1.Text = &rawText
-
-	payload := slack.Payload{
-		Text:        "New Locations of Interest!",
-		Username:    "NZCovidTracker",
-		Channel:     "#covid-19-locations",
-		IconUrl:     "https://www.skids.co.nz/wp-content/uploads/2020/08/download.png",
-		Attachments: []slack.Attachment{attachment1},
 	}
 
 	for _, webhook := range SlackWebhooks {
@@ -37,7 +25,16 @@ func postToSlack() {
 			continue
 		}
 
-		err := slack.Send(webhook, "", payload)
+		parts := strings.Split(webhook, "!")
+		payload := slack.Payload{
+			Text:        "New Locations of Interest!",
+			Username:    "NZCovidTracker",
+			Channel:     "#" + parts[1],
+			IconUrl:     "https://www.skids.co.nz/wp-content/uploads/2020/08/download.png",
+			Attachments: attachmentData,
+		}
+
+		err := slack.Send(parts[0], "", payload)
 		if len(err) > 0 {
 			fmt.Print(err)
 		}
