@@ -36,7 +36,7 @@ func postToSlack() {
 
 		err := slack.Send(parts[0], "", payload)
 		if len(err) > 0 {
-			fmt.Print(err)
+			fmt.Printf("Wehbook: %s\nError: %s", webhook, err)
 		}
 	}
 }
