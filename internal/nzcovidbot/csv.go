@@ -159,7 +159,7 @@ func loadRowsIntoCache(filePath string) {
 			break
 		}
 		if err != nil {
-			log.Fatal(err)
+			continue
 		}
 
 		// Skip header row
@@ -171,11 +171,6 @@ func loadRowsIntoCache(filePath string) {
 		// Parse into our required format
 		c := make([]string, 0)
 		c = append(c, row...)
-
-		if len(c) < 6 {
-			log.Printf("Skipping invalid row")
-			continue
-		}
 
 		st, et, err := parseRowTimes(c[4], c[5])
 		if err != nil {
