@@ -172,6 +172,11 @@ func loadRowsIntoCache(filePath string) {
 		c := make([]string, 0)
 		c = append(c, row...)
 
+		if len(c) < 6 {
+			log.Printf("Skipping invalid row")
+			continue
+		}
+
 		st, et, err := parseRowTimes(c[4], c[5])
 		if err != nil {
 			continue
