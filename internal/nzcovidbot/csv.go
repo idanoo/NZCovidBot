@@ -46,6 +46,11 @@ func parseCsvRow(data string) {
 		return
 	}
 
+	if len(c) < 6 {
+		log.Printf("Invalid line. Skipping")
+		return
+	}
+
 	if rowHasChanged(c[4], st, et, c[2], c[3]) {
 		newRow := UpdatedRow{
 			FromDate:        st,
@@ -246,6 +251,10 @@ func parseRawRowData(data string) ([]string, time.Time, time.Time, error) {
 
 	c := make([]string, 0)
 	c = append(c, fields...)
+	if len(c) < 6 {
+		// Add helper in case someone somehow does something wrong
+		return output, time.Now(), time.Now(), err
+	}
 
 	st, et, err := parseRowTimes(c[4], c[5])
 
