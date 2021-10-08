@@ -46,7 +46,7 @@ func parseCsvRow(data string) {
 		return
 	}
 
-	if len(c) < 6 {
+	if len(c) < 5 {
 		log.Printf("Invalid line. Skipping")
 		return
 	}
@@ -251,7 +251,7 @@ func parseRawRowData(data string) ([]string, time.Time, time.Time, error) {
 
 	c := make([]string, 0)
 	c = append(c, fields...)
-	if len(c) < 6 {
+	if len(c) < 5 {
 		// Add helper in case someone somehow does something wrong
 		return output, time.Now(), time.Now(), err
 	}
