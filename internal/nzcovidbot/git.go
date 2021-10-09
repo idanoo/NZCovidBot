@@ -62,14 +62,15 @@ func checkForUpdates() {
 	// Get current commit hash PRE PULL
 	currentHead, err := gitRepo.Head()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Err getting head: %s", err)
+		return
 	}
 	currentHash := currentHead.Hash()
 
 	// Pull latest changes if exist
 	worktree, err := gitRepo.Worktree()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Err getting worktree: %s", err)
 	}
 	err = worktree.Pull(&pullOptions)
 	if err != nil {
@@ -77,38 +78,44 @@ func checkForUpdates() {
 			log.Println("No updates")
 			return
 		} else {
-			log.Fatal(err)
+			log.Printf("Err pulling: %s", err)
+			return
 		}
 	}
 
 	// Get current commit hash POST PULL
 	head, err := gitRepo.Head()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Err getting new head: %s", err)
+		return
 	}
 
 	// Get latest commit
 	latestCommit, err := gitRepo.CommitObject(head.Hash())
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Err getting latest commit: %s", err)
+		return
 	}
 
 	// Get current commit
 	currentCommit, err := gitRepo.CommitObject(currentHash)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Err getting new commit: %s", err)
+		return
 	}
 
 	// Get patch of changes
 	patch, err := currentCommit.Patch(latestCommit)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Err getting change patch: %s", err)
+		return
 	}
 
 	// Parse git diff
 	diff, err := diffparser.Parse(patch.String())
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Err parsing diff: %s", err)
+		return
 	}
 
 	// Loop through file changes
