@@ -1,5 +1,7 @@
 # NZCovidBot
-Pull data from Github and parse new locations and fire them off to any configured endpoints (Slack, Discord, Twitter(untested))
+Pull data from Github and parse new locations and fire them off to any configured endpoints (Slack, Discord, Twitter(untested)).
+    
+It currently posts if a new row is added or a name/date changes from a previous line.
 
 ### About
 After the twitterbot @nzcovidlocs shut down, I decided to try a different approach, instead of scraping MoH's website, lets parse the raw data!
