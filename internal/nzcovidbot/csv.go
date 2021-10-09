@@ -68,11 +68,6 @@ func parseCsvRow(data string) {
 		// Append row data
 		updatedLocations.Locations = append(updatedLocations.Locations, newRow)
 	}
-
-	if len(updatedLocations.Locations) > 60 {
-		log.Print("Not displaying > 60 locations!")
-		updatedLocations = UpdatedLocations{}
-	}
 }
 
 // rowHasChanged - Determine if row has actually changed based on raw data
