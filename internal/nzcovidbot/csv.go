@@ -93,10 +93,10 @@ func rowHasChanged(exposureId string, startTime time.Time, endTime time.Time, lo
 		return true
 	}
 
-	if !strings.EqualFold(val.LocationAddress, locationAddress) {
-		log.Printf("LocationAddress Change for %s from %s to %s", exposureId, val.LocationAddress, locationAddress)
-		return true
-	}
+	// if !strings.EqualFold(val.LocationAddress, locationAddress) {
+	// 	log.Printf("LocationAddress Change for %s from %s to %s", exposureId, val.LocationAddress, locationAddress)
+	// 	return true
+	// }
 
 	return false
 }
