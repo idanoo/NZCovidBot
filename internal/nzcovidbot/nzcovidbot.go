@@ -2,14 +2,21 @@ package nzcovidbot
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"strconv"
 	"time"
 )
 
-var Repository string
+// Time of last succesful poll
+var lastUpdated time.Time
 
+// Main func
 func Lesgoooo() {
-	// Setup repo stuff
-	loadRepo(Repository)
+	// Set last updated poll time!
+	lastUpdated = getLastPollTime()
+	log.Printf("Using last updated time: %s", lastUpdated.Local())
 
 	// Create chan to end timer
 	endTicker := make(chan bool)
@@ -17,8 +24,8 @@ func Lesgoooo() {
 	// Timer to run every minute
 	minuteTicker := time.NewTicker(time.Duration(60) * time.Second)
 
-	// Initial check on load
-	go checkForUpdates()
+	// Initial poll check on load
+	go getNewAPILocations()
 
 	for {
 		select {
@@ -27,34 +34,39 @@ func Lesgoooo() {
 			return
 		case <-minuteTicker.C:
 			// Check for updates
-			go checkForUpdates()
+			go getNewAPILocations()
 		}
 	}
 }
 
+// getLastPollTime - If run previously, get last TS, otherwise Now()
+func getLastPollTime() time.Time {
+	// Set default of *now* if never run so we don't spam everything
+	lastUpdated = time.Now()
+
+	// Load up last-polled date if set
+	file, err := os.Open("lastUpdated.txt")
+	if err == nil {
+		b, err := ioutil.ReadAll(file)
+		if err != nil {
+			log.Printf("Unable to read lastUpdated.txt: %s", err)
+		}
+
+		i, err := strconv.ParseInt(string(b), 10, 64)
+		if err != nil {
+			log.Printf("Unable to read lastUpdated.txt: %s", err)
+		}
+
+		lastUpdated = time.Unix(i, 0)
+	}
+
+	return lastUpdated
+}
+
 func postTheUpdates() {
-	// Lets reshuffle our structured data a bit (Exposure Date ASC)
-	orderRowDataByDate()
-
-	// Twitter
-	go postToTwitter()
-
 	// Slack
 	go postToSlack()
 
 	// Discord
-	postableDiscordData := getPostableDiscordData()
-	if len(postableDiscordData) == 0 {
-		return
-	}
-
-	for _, discordWebhook := range DiscordWebhooks {
-		for _, postableData := range postableDiscordData {
-			go postToDiscord(discordWebhook, postableData)
-			time.Sleep(500 * time.Millisecond)
-		}
-	}
-
-	// Clear out posted data!
-	updatedLocations = UpdatedLocations{}
+	go postToDiscord()
 }
