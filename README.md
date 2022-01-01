@@ -1,15 +1,11 @@
 # NZCovidBot
-Pull data from Github and parse new locations and fire them off to any configured endpoints (Slack, Discord, Twitter(untested)).
-    
-It currently posts if a new row is added or a name/date changes from a previous line.
-
+Pulls data from Ministry of Health API and parse into Discord and Slack webhooks.
 ### About
-After the twitterbot @nzcovidlocs shut down, I decided to try a different approach, instead of scraping MoH's website, lets parse the raw data!
-https://github.com/minhealthnz/nz-covid-data/tree/main/locations-of-interest/august-2021    
-It will clone ministry of healths git repo and poll every minute for updates to their raw CSV
+After the twitterbot @nzcovidlocs shut down, I decided to try a different approach, instead of scraping MoH's website, we originally parsed the raw CSV data.
+Since then the NZ Ministry of Health have released an API containing this data now. We are now using this https://api.integration.covid19.health.nz/locations/v1/current-locations-of-interest 
 
 ## Config
-Copy .env.example to .env and fill in the blanks.
+Copy .env.example to .env and fill in the webhook URLs
 
 ### Run locally
 ```

@@ -24,17 +24,6 @@ func main() {
 	// Fetch slack webhooks
 	nzcovidbot.SlackWebhooks = strings.Split(os.Getenv("SLACK_WEBHOOKS"), ",")
 
-	// Fetch twitter keys
-	nzcovidbot.TwitterCreds = nzcovidbot.TwitterCredentials{
-		ConsumerKey:       os.Getenv("TWITTER_CONSUMER_KEY"),
-		ConsumerSecret:    os.Getenv("TWITTER_CONSUMER_SECRET"),
-		AccessToken:       os.Getenv("TWITTER_ACCESS_TOKEN"),
-		AccessTokenSecret: os.Getenv("TWITTER_ACCESS_TOKEN_SECRET"),
-	}
-
-	// Git repo URL
-	nzcovidbot.Repository = os.Getenv("SOURCE_REPO")
-
 	// Boot up listeners / main loop
 	nzcovidbot.Lesgoooo()
 }

@@ -2,6 +2,7 @@ package nzcovidbot
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/ashwanthkumar/slack-go-webhook"
@@ -10,6 +11,7 @@ import (
 // Slack webhook#channel
 var SlackWebhooks []string
 
+// Send slack request
 func postToSlack() {
 	if len(SlackWebhooks) == 0 {
 		return
@@ -39,4 +41,37 @@ func postToSlack() {
 			fmt.Printf("Wehbook: %s\nError: %s", webhook, err)
 		}
 	}
+}
+
+// Adds new rows to a slice for slack
+func getPostableSlackData() []slack.Attachment {
+	rows := make([]slack.Attachment, 0)
+	if len(newLocations.Items) == 0 {
+		return rows
+	}
+
+	for _, item := range newLocations.Items {
+		rows = append(rows, getSlackRow(item))
+	}
+
+	return rows
+}
+
+// getSlackRow - Get slack attachment row
+func getSlackRow(item ApiItem) slack.Attachment {
+	url := getMapsLinkFromAddress(item.EventName, item.Location.Address)
+	dateRange := item.getDateString()
+
+	attachment := slack.Attachment{
+		Title:     &item.EventName,
+		TitleLink: &url,
+		Text:      &dateRange,
+	}
+
+	return attachment
+}
+
+// getMapsLinkFromAddress hyperlink gmaps
+func getMapsLinkFromAddress(name string, address string) string {
+	return fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%s", url.QueryEscape(name+", "+address))
 }
