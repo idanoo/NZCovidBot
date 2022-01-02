@@ -3,6 +3,7 @@
 ## 1.1
 - Split messages based on location
 - Added systemd service
+- Default to current time instead of 1970 (Unix timestamp 0)
 
 ## 1.0
 - Reworked to use API

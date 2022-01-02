@@ -16,8 +16,15 @@ Copy .env.example to .env and fill in the webhook URLs
 ### Build
 ```
     go build -o nzcovidbot cmd/nzcovidbot/*.go
-    ./nzcovidbot
     sudo cp nzcovidbot.service /etc/systemd/system/nzcovidbot.service
     # Update user + location of repo in systemd file
     sudo systemctl daemon-reload && systemctl enable --now nzcovidbot.service
 ```
+
+### Screenshots
+
+#### Discord
+![DiscordExample](https://gitlab.com/idanoo/NZCovidBot/-/raw/master/discordexample.png)
+
+#### Slack
+![SlackExample](https://gitlab.com/idanoo/NZCovidBot/-/raw/master/slackexample.png)

@@ -42,7 +42,7 @@ func Lesgoooo() {
 // getLastPollTime - If run previously, get last TS, otherwise Now()
 func getLastPollTime() time.Time {
 	// Set default of *now* if never run so we don't spam everything
-	lastUpdated = time.Now()
+	lastPoll := time.Now()
 
 	// Load up last-polled date if set
 	file, err := os.Open("lastUpdated.txt")
@@ -50,17 +50,19 @@ func getLastPollTime() time.Time {
 		b, err := ioutil.ReadAll(file)
 		if err != nil {
 			log.Printf("Unable to read lastUpdated.txt: %s", err)
+			return lastPoll
 		}
 
 		i, err := strconv.ParseInt(string(b), 10, 64)
 		if err != nil {
 			log.Printf("Unable to read lastUpdated.txt: %s", err)
+			return lastPoll
 		}
 
-		lastUpdated = time.Unix(i, 0)
+		lastPoll = time.Unix(i, 0)
 	}
 
-	return lastUpdated
+	return lastPoll
 }
 
 func postTheUpdates() {
