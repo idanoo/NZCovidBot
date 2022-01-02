@@ -1,0 +1,13 @@
+[Unit]
+Description=NZCovidBot
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/NZCovidBot
+ExecStart=/root/NZCovidBot/nzcovidbot
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

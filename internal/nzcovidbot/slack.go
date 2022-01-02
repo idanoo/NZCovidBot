@@ -28,30 +28,35 @@ func postToSlack() {
 		}
 
 		parts := strings.Split(webhook, "!")
-		payload := slack.Payload{
-			Text:        "New Locations of Interest!",
-			Username:    "NZCovidTracker",
-			Channel:     "#" + parts[1],
-			IconUrl:     "https://www.skids.co.nz/wp-content/uploads/2020/08/download.png",
-			Attachments: attachmentData,
-		}
 
-		err := slack.Send(parts[0], "", payload)
-		if len(err) > 0 {
-			fmt.Printf("Wehbook: %s\nError: %s", webhook, err)
+		for location, items := range attachmentData {
+			payload := slack.Payload{
+				Text:        "*" + location + "*",
+				Username:    "NZCovidTracker",
+				Channel:     "#" + parts[1],
+				IconUrl:     "https://www.skids.co.nz/wp-content/uploads/2020/08/download.png",
+				Attachments: items,
+			}
+
+			err := slack.Send(parts[0], "", payload)
+			if len(err) > 0 {
+				fmt.Printf("Wehbook: %s\nError: %s", webhook, err)
+			}
 		}
 	}
 }
 
 // Adds new rows to a slice for slack
-func getPostableSlackData() []slack.Attachment {
-	rows := make([]slack.Attachment, 0)
+func getPostableSlackData() map[string][]slack.Attachment {
+	rows := make(map[string][]slack.Attachment, 0)
 	if len(newLocations.Items) == 0 {
 		return rows
 	}
 
-	for _, item := range newLocations.Items {
-		rows = append(rows, getSlackRow(item))
+	for location, items := range newLocations.Items {
+		for _, item := range items {
+			rows[location] = append(rows[location], getSlackRow(item))
+		}
 	}
 
 	return rows

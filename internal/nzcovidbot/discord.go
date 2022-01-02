@@ -20,54 +20,71 @@ func postToDiscord() {
 	}
 
 	for _, discordWebhook := range DiscordWebhooks {
-		for _, postableData := range postableDiscordData {
-			if discordWebhook != "" {
-				tokenParts := strings.Split(discordWebhook, "/")
-				len := len(tokenParts)
+		if discordWebhook != "" {
+			// Build discord request
+			tokenParts := strings.Split(discordWebhook, "/")
+			len := len(tokenParts)
+			webhook, err := disgohook.NewWebhookClientByToken(nil, nil, tokenParts[len-2]+"/"+tokenParts[len-1])
+			if err != nil {
+				log.Print(err)
+				continue
+			}
 
-				// Build discord request
-				webhook, err := disgohook.NewWebhookClientByToken(nil, nil, tokenParts[len-2]+"/"+tokenParts[len-1])
-				if err != nil {
-					log.Print(err)
-					return
+			// Build message and send for each location
+			for location, postableData := range postableDiscordData {
+				for _, post := range postableData {
+
+					// Send discord message
+					_, err = webhook.SendEmbeds(api.NewEmbedBuilder().
+						SetTitle("*" + location + "*").
+						SetDescription(post).
+						Build(),
+					)
+
+					if err != nil {
+						log.Print(err)
+					}
+
+					time.Sleep(500 * time.Millisecond)
 				}
-
-				// Send discord message
-				_, err = webhook.SendEmbeds(api.NewEmbedBuilder().
-					SetDescription(postableData).
-					Build(),
-				)
-
-				if err != nil {
-					log.Print(err)
-				}
-
-				time.Sleep(500 * time.Millisecond)
 			}
 		}
 	}
 }
 
 // getPostableDiscordData - Returns slices containing 20~ locations each
-// to send as separate messages
-func getPostableDiscordData() []string {
-	// Create our slice of groups
-	groups := make([]string, 0)
+// to send as separate messages. map[location][]locationsofinterest
+func getPostableDiscordData() map[string][]string {
+	// Create our return map
+	groups := make(map[string][]string, 0)
+
+	// If no locations, lets return empty map
 	if len(newLocations.Items) == 0 {
 		return groups
 	}
 
-	rows := make([]string, 0)
-	for _, item := range newLocations.Items {
-		rows = append(rows, getDiscordRow(item))
+	for location, items := range newLocations.Items {
+		// Create out output buffer per location
+		rows := make([]string, 0)
 
-		if len(rows) > 20 {
-			groups = append(groups, strings.Join(rows, "\n"))
-			rows = make([]string, 0)
+		// Foreach item, create the output text based off the item
+		for _, item := range items {
+			rows = append(rows, getDiscordRow(item))
+
+			// Make sure to create a new slice if we have >20 to send as a different message
+			if len(rows) > 20 {
+				groups[location] = append(groups[location], strings.Join(rows, "\n"))
+				rows = make([]string, 0)
+			}
+		}
+
+		// If we have less than 20, append any more before next location
+		if len(rows) > 0 {
+			groups[location] = append(groups[location], strings.Join(rows, "\n"))
 		}
 	}
 
-	return append(groups, strings.Join(rows, "\n"))
+	return groups
 }
 
 // formatCsvDiscordRow Format the string to a tidy string for the interwebs

@@ -13,23 +13,29 @@ import (
 
 const API_ENDPOINT = "https://api.integration.covid19.health.nz/locations/v1/current-locations-of-interest"
 
-var newLocations ApiResponse
+var newLocations PostResponse
 
+// Response from MoH API
 type ApiResponse struct {
 	Items []ApiItem `json:"items"`
 }
 
+// PostResponse - Above items ordered by location
+type PostResponse struct {
+	Items map[string][]ApiItem `json:"items"`
+}
+
 type ApiItem struct {
-	EventID          string    `json:"eventId"`
-	EventName        string    `json:"eventName"`
-	StartDateTime    time.Time `json:"startDateTime"`
-	EndDateTime      time.Time `json:"endDateTime"`
-	PublicAdvice     string    `json:"publicAdvice"`
-	VisibleInWebform bool      `json:"visibleInWebform"`
-	PublishedAt      time.Time `json:"publishedAt"`
-	// UpdatedAt        time.Time `json:"updatedAt"` // Nullable
-	ExposureType string `json:"exposureType"`
-	Location     struct {
+	EventID          string      `json:"eventId"`
+	EventName        string      `json:"eventName"`
+	StartDateTime    time.Time   `json:"startDateTime"`
+	EndDateTime      time.Time   `json:"endDateTime"`
+	PublicAdvice     string      `json:"publicAdvice"`
+	VisibleInWebform bool        `json:"visibleInWebform"`
+	PublishedAt      time.Time   `json:"publishedAt"`
+	UpdatedAt        interface{} `json:"updatedAt"`
+	ExposureType     string      `json:"exposureType"`
+	Location         struct {
 		Latitude  string `json:"latitude"`
 		Longitude string `json:"longitude"`
 		Suburb    string `json:"suburb"`
@@ -85,25 +91,30 @@ func getNewAPILocations() {
 	}
 
 	// Re-init our apiRepsonse so we don't hold onto old locations!
-	newItems := make([]ApiItem, 0)
+	newItems := make(map[string][]ApiItem, 0)
 
 	// Iterate over the data and only find new locations
 	for _, item := range locations.Items {
 		if item.PublishedAt.Unix() > lastUpdated.Unix() {
 			// Clone the item to put in our own lil slice
 			copy := item
-			newItems = append(newItems, copy)
+			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
 		}
 	}
 
-	// Make sure to clear out the previous list and append new data
-	newLocations = ApiResponse{}
-	newLocations.Items = newItems
+	// Make sure to clear out the previous list and append new data in a map based on location
+	newLocations = PostResponse{}
+	newLocations.Items = make(map[string][]ApiItem, 0)
 
-	// Order by StartDate
-	sort.Slice(newLocations.Items, func(i, j int) bool {
-		return newLocations.Items[i].StartDateTime.Before(newLocations.Items[j].StartDateTime)
-	})
+	for mapKey, mapItems := range newItems {
+		// Add location to our newLocations map
+		newLocations.Items[mapKey] = mapItems
+
+		// Order by StartDate
+		sort.Slice(newLocations.Items[mapKey], func(i, j int) bool {
+			return newLocations.Items[mapKey][i].StartDateTime.Before(newLocations.Items[mapKey][j].StartDateTime)
+		})
+	}
 
 	// If new items, post it!
 	if len(newLocations.Items) > 0 {
@@ -147,5 +158,5 @@ func (item ApiItem) getDateString() string {
 	dateFormat := "Mon 2 Jan, 03:04PM"
 	timeFormat := "03:04PM"
 
-	return st.Format(dateFormat) + " - " + et.Format(timeFormat)
+	return st.Local().Format(dateFormat) + " - " + et.Local().Format(timeFormat)
 }
