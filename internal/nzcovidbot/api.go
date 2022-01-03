@@ -56,7 +56,7 @@ func fetchAPILocations() (ApiResponse, error) {
 	}
 
 	// Set user-agent info
-	req.Header.Set("User-Agent", "NZCovidBot/1.1 (https://m2.nz)")
+	req.Header.Set("User-Agent", "NZCovidBot/1.2 (https://m2.nz)")
 
 	// Fire off the request
 	resp, err := client.Do(req)
@@ -156,8 +156,8 @@ func (item ApiItem) getDateString() string {
 	st := item.StartDateTime
 	et := item.EndDateTime
 
-	dateFormat := "Mon 2 Jan, 03:04PM"
-	timeFormat := "03:04PM"
+	dateFormat := "Mon Jan 2nd 3:04PM"
+	timeFormat := "2nd 3:04PM"
 
 	return st.Local().Format(dateFormat) + " - " + et.Local().Format(timeFormat)
 }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2
+- Change lastUpdated to pointer reference
+- Change date format to support multiple dates in single point of interest
+
 ## 1.1
 - Split messages based on location
 - Added systemd service
