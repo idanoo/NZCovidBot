@@ -56,7 +56,7 @@ func fetchAPILocations() (ApiResponse, error) {
 	}
 
 	// Set user-agent info
-	req.Header.Set("User-Agent", "NZCovidBot/1.0 (https://m2.nz)")
+	req.Header.Set("User-Agent", "NZCovidBot/1.1 (https://m2.nz)")
 
 	// Fire off the request
 	resp, err := client.Do(req)
@@ -82,6 +82,7 @@ func getNewAPILocations() {
 	// Set lastUpdate time at the start of the request so we don't miss any locations
 	// posted right after we poll
 	newPollTime := time.Now()
+	previousPollTime := *lastUpdated
 
 	// Pull latest data
 	locations, err := fetchAPILocations()
@@ -95,7 +96,7 @@ func getNewAPILocations() {
 
 	// Iterate over the data and only find new locations
 	for _, item := range locations.Items {
-		if item.PublishedAt.Unix() > lastUpdated.Unix() {
+		if item.PublishedAt.Unix() > previousPollTime.Unix() {
 			// Clone the item to put in our own lil slice
 			copy := item
 			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
@@ -121,11 +122,11 @@ func getNewAPILocations() {
 		postTheUpdates()
 	}
 
-	updateLastUpdated(newPollTime)
+	updateLastUpdated(&newPollTime)
 }
 
 // updateLastUpdated - Creates/Updates lastUpdated.txt
-func updateLastUpdated(newUpdated time.Time) {
+func updateLastUpdated(newUpdated *time.Time) {
 	// Make sure to update the global var for next poll
 	lastUpdated = newUpdated
 
