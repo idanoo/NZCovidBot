@@ -79,10 +79,9 @@ func fetchAPILocations() (ApiResponse, error) {
 
 // getNewAPILocations - Gets all locations and triggers posts
 func getNewAPILocations() {
-	// Set lastUpdate time at the start of the request so we don't miss any locations
-	// posted right after we poll
-	newPollTime := time.Now()
-	previousPollTime := *lastUpdated
+	// Set lastUpdated to the
+	previousUpdatedTime := *lastUpdated
+	newUpdatedTime := *lastUpdated
 
 	// Pull latest data
 	locations, err := fetchAPILocations()
@@ -96,10 +95,15 @@ func getNewAPILocations() {
 
 	// Iterate over the data and only find new locations
 	for _, item := range locations.Items {
-		if item.PublishedAt.Unix() > previousPollTime.Unix() {
+		if item.PublishedAt.After(previousUpdatedTime) {
 			// Clone the item to put in our own lil slice
 			copy := item
 			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
+
+			// Always keep the latest
+			if item.PublishedAt.After(newUpdatedTime) {
+				newUpdatedTime = item.PublishedAt
+			}
 		}
 	}
 
@@ -122,7 +126,10 @@ func getNewAPILocations() {
 		postTheUpdates()
 	}
 
-	updateLastUpdated(&newPollTime)
+	// Only update the time if greater!
+	if newUpdatedTime.After(previousUpdatedTime) {
+		updateLastUpdated(&newUpdatedTime)
+	}
 }
 
 // updateLastUpdated - Creates/Updates lastUpdated.txt
@@ -156,8 +163,21 @@ func (item ApiItem) getDateString() string {
 	st := item.StartDateTime
 	et := item.EndDateTime
 
-	dateFormat := "Mon Jan 2nd 3:04PM"
-	timeFormat := "2nd 3:04PM"
+	std := getDaySuffix(st)
 
-	return st.Local().Format(dateFormat) + " - " + et.Local().Format(timeFormat)
+	return st.Local().Format("Jan 2"+std+" Mon 3:04PM") + " - " + et.Local().Format("Mon 3:04PM")
+}
+
+// getDaySuffix - get day suffix
+func getDaySuffix(t time.Time) string {
+	suffix := "th"
+	switch t.Day() {
+	case 1, 21, 31:
+		suffix = "st"
+	case 2, 22:
+		suffix = "nd"
+	case 3, 23:
+		suffix = "rd"
+	}
+	return suffix
 }

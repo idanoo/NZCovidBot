@@ -1,8 +1,9 @@
 # Changelog
 
 ## 1.2
-- Change lastUpdated to pointer reference
+- Change lastUpdated to pointer reference and use built in .After() functions
 - Change date format to support multiple dates in single point of interest
+- Update lastUpdated to max of previous event
 
 ## 1.1
 - Split messages based on location
