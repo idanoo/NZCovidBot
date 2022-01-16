@@ -1,5 +1,8 @@
 # Changelog
 
+# 1.3
+- Omicron related ones will post with an asterisk to indicate
+
 ## 1.2
 - Change lastUpdated to pointer reference and use built in .After() functions
 - Change date format to support multiple dates in single point of interest

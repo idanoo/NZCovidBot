@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -56,7 +57,7 @@ func fetchAPILocations() (ApiResponse, error) {
 	}
 
 	// Set user-agent info
-	req.Header.Set("User-Agent", "NZCovidBot/1.2 (https://m2.nz)")
+	req.Header.Set("User-Agent", "NZCovidBot/1.3 (https://m2.nz)")
 
 	// Fire off the request
 	resp, err := client.Do(req)
@@ -95,7 +96,17 @@ func getNewAPILocations() {
 
 	// Iterate over the data and only find new locations
 	for _, item := range locations.Items {
-		if item.PublishedAt.After(previousUpdatedTime) {
+		if strings.Contains(strings.ToLower(item.PublicAdvice), "omicron") {
+			copy := item
+			// Apend Omicron if Omicron in advice
+			copy.EventName = copy.EventName + " (Omicron)"
+			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
+
+			// Always keep the latest
+			if item.PublishedAt.After(newUpdatedTime) {
+				newUpdatedTime = item.PublishedAt
+			}
+		} else if item.PublishedAt.After(previousUpdatedTime) {
 			// Clone the item to put in our own lil slice
 			copy := item
 			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
