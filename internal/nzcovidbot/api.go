@@ -101,20 +101,15 @@ func getNewAPILocations() {
 			// Apend Omicron if Omicron in advice
 			copy.EventName = copy.EventName + " (Omicron)"
 			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
-
-			// Always keep the latest
-			if item.PublishedAt.After(newUpdatedTime) {
-				newUpdatedTime = item.PublishedAt
-			}
 		} else if item.PublishedAt.After(previousUpdatedTime) {
 			// Clone the item to put in our own lil slice
 			copy := item
 			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
+		}
 
-			// Always keep the latest
-			if item.PublishedAt.After(newUpdatedTime) {
-				newUpdatedTime = item.PublishedAt
-			}
+		// Always keep the latest
+		if item.PublishedAt.After(newUpdatedTime) {
+			newUpdatedTime = item.PublishedAt
 		}
 	}
 
