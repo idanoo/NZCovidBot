@@ -99,6 +99,9 @@ func getNewAPILocations() {
 		if item.PublishedAt.After(previousUpdatedTime) {
 			// Clone the item to put in our own lil slice
 			copy := item
+			if strings.Contains(strings.ToLower(item.PublicAdvice), "omicron") {
+				copy.EventName = copy.EventName + " (Omicron)"
+			}
 			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
 
 			// Always keep the latest
