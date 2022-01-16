@@ -27,15 +27,15 @@ type PostResponse struct {
 }
 
 type ApiItem struct {
-	EventID          string      `json:"eventId"`
-	EventName        string      `json:"eventName"`
-	StartDateTime    time.Time   `json:"startDateTime"`
-	EndDateTime      time.Time   `json:"endDateTime"`
-	PublicAdvice     string      `json:"publicAdvice"`
-	VisibleInWebform bool        `json:"visibleInWebform"`
-	PublishedAt      time.Time   `json:"publishedAt"`
-	UpdatedAt        interface{} `json:"updatedAt"`
-	ExposureType     string      `json:"exposureType"`
+	EventID          string    `json:"eventId"`
+	EventName        string    `json:"eventName"`
+	StartDateTime    time.Time `json:"startDateTime"`
+	EndDateTime      time.Time `json:"endDateTime"`
+	PublicAdvice     string    `json:"publicAdvice"`
+	VisibleInWebform bool      `json:"visibleInWebform"`
+	PublishedAt      time.Time `json:"publishedAt"`
+	UpdatedAt        time.Time `json:"updatedAt"`
+	ExposureType     string    `json:"exposureType"`
 	Location         struct {
 		Latitude  string `json:"latitude"`
 		Longitude string `json:"longitude"`
@@ -96,21 +96,29 @@ func getNewAPILocations() {
 
 	// Iterate over the data and only find new locations
 	for _, item := range locations.Items {
-		if strings.Contains(strings.ToLower(item.PublicAdvice), "omicron") {
-			copy := item
-			// Apend Omicron if Omicron in advice
-			copy.EventName = copy.EventName + " (Omicron)"
-			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
-		} else if item.PublishedAt.After(previousUpdatedTime) {
+		if item.PublishedAt.After(previousUpdatedTime) {
 			// Clone the item to put in our own lil slice
 			copy := item
 			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
+
+			// Always keep the latest
+			if item.PublishedAt.After(newUpdatedTime) {
+				newUpdatedTime = item.PublishedAt
+			}
+		} else if item.UpdatedAt.After(previousUpdatedTime) {
+			if strings.Contains(strings.ToLower(item.PublicAdvice), "omicron") {
+				copy := item
+				// Apend Omicron if Omicron in advice
+				copy.EventName = copy.EventName + " (Omicron)"
+				newItems[item.Location.City] = append(newItems[item.Location.City], copy)
+
+				// Always keep the latest
+				if item.UpdatedAt.After(newUpdatedTime) {
+					newUpdatedTime = item.UpdatedAt
+				}
+			}
 		}
 
-		// Always keep the latest
-		if item.PublishedAt.After(newUpdatedTime) {
-			newUpdatedTime = item.PublishedAt
-		}
 	}
 
 	// Make sure to clear out the previous list and append new data in a map based on location
