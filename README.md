@@ -8,6 +8,11 @@ Since then the NZ Ministry of Health have released an API containing this data n
 ## Config
 Copy .env.example to .env and fill in the webhook URLs
 
+### Prod/Binary build (linux x86_64)
+Download the latest job artifact from CI/CD > Job page    
+create `.env` from `.env.example` in same directory as binary    
+Run binary `./nzcovidbot`    
+
 ### Run locally
 ```
     go run cmd/nzcovidbot/*.go
