@@ -2,6 +2,7 @@
 
 # 1.3
 - Omicron related ones will post with an asterisk to indicate
+- Group different spelling locations together
 
 ## 1.2
 - Change lastUpdated to pointer reference and use built in .After() functions

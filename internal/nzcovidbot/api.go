@@ -102,7 +102,8 @@ func getNewAPILocations() {
 			if strings.Contains(strings.ToLower(item.PublicAdvice), "omicron") {
 				copy.EventName = copy.EventName + " (Omicron)"
 			}
-			newItems[item.Location.City] = append(newItems[item.Location.City], copy)
+			locationParse := parseCity(item.Location.City)
+			newItems[locationParse] = append(newItems[locationParse], copy)
 
 			// Always keep the latest
 			if item.PublishedAt.After(newUpdatedTime) {
@@ -113,7 +114,8 @@ func getNewAPILocations() {
 				copy := item
 				// Apend Omicron if Omicron in advice
 				copy.EventName = copy.EventName + " (Omicron)"
-				newItems[item.Location.City] = append(newItems[item.Location.City], copy)
+				locationParse := parseCity(item.Location.City)
+				newItems[locationParse] = append(newItems[locationParse], copy)
 
 				// Always keep the latest
 				if item.UpdatedAt.After(newUpdatedTime) {
@@ -197,4 +199,13 @@ func getDaySuffix(t time.Time) string {
 		suffix = "rd"
 	}
 	return suffix
+}
+
+func parseCity(c string) string {
+	switch city := c; city {
+	case "Whangarei":
+		return "Whangārei"
+	default:
+		return city
+	}
 }
