@@ -66,6 +66,9 @@ func getLastPollTime() *time.Time {
 }
 
 func postTheUpdates() {
+	// Telegram
+	go postToTelegram()
+
 	// Slack
 	go postToSlack()
 

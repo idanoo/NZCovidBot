@@ -87,9 +87,8 @@ func getPostableDiscordData() map[string][]string {
 	return groups
 }
 
-// formatCsvDiscordRow Format the string to a tidy string for the interwebs
+// getDiscordRow Format the string to a tidy string for the interwebs
 func getDiscordRow(item ApiItem) string {
 	return fmt.Sprintf("**%s** %s on _%s_",
 		item.EventName, item.Location.Address, item.getDateString())
-
 }

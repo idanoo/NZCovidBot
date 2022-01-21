@@ -24,6 +24,9 @@ func main() {
 	// Fetch slack webhooks
 	nzcovidbot.SlackWebhooks = strings.Split(os.Getenv("SLACK_WEBHOOKS"), ",")
 
+	// Fetch slack webhooks
+	nzcovidbot.TelegramTokens = strings.Split(os.Getenv("TELEGRAM_BOT_TOKENS"), ",")
+
 	// Boot up listeners / main loop
 	nzcovidbot.Lesgoooo()
 }

@@ -1,5 +1,8 @@
 # Changelog
 
+# 1.4
+- Add telegram postings (currently t.me/nzcovidlocations)
+
 # 1.3
 - Omicron related ones will post with an asterisk to indicate
 - Group different spelling locations together

@@ -57,7 +57,7 @@ func fetchAPILocations() (ApiResponse, error) {
 	}
 
 	// Set user-agent info
-	req.Header.Set("User-Agent", "NZCovidBot/1.3 (https://m2.nz)")
+	req.Header.Set("User-Agent", "NZCovidBot/1.4 (https://m2.nz)")
 
 	// Fire off the request
 	resp, err := client.Do(req)
@@ -123,7 +123,6 @@ func getNewAPILocations() {
 				}
 			}
 		}
-
 	}
 
 	// Make sure to clear out the previous list and append new data in a map based on location
