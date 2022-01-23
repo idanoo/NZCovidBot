@@ -15,4 +15,3 @@ build-go:
     expire_in: 1 month
     paths:
       - nzcovidbot
-app
