@@ -109,19 +109,6 @@ func getNewAPILocations() {
 			if item.PublishedAt.After(newUpdatedTime) {
 				newUpdatedTime = item.PublishedAt
 			}
-		} else if item.UpdatedAt.After(previousUpdatedTime) {
-			if strings.Contains(strings.ToLower(item.PublicAdvice), "omicron") {
-				copy := item
-				// Apend Omicron if Omicron in advice
-				copy.EventName = copy.EventName + " (Omicron)"
-				locationParse := parseCity(item.Location.City)
-				newItems[locationParse] = append(newItems[locationParse], copy)
-
-				// Always keep the latest
-				if item.UpdatedAt.After(newUpdatedTime) {
-					newUpdatedTime = item.UpdatedAt
-				}
-			}
 		}
 	}
 
