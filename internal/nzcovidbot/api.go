@@ -176,7 +176,7 @@ func (item ApiItem) getDateString() string {
 // getDaySuffix - get day suffix
 func getDaySuffix(t time.Time) string {
 	suffix := "th"
-	switch t.Day() {
+	switch t.Local().Day() {
 	case 1, 21, 31:
 		suffix = "st"
 	case 2, 22:
